@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Graphs</title>
+		<style>
+			.cyto {height: 50vw;}
+		</style>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.19.1/cytoscape.min.js" integrity="sha512-REr7ZKldLo2Lx6UiQ6autPWZR+j4u1/7ElYsrcwFe3ZmT/TKXCF/vXqNP/d2BQ78k0tapdZFccpFkku9bwrS3w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+	</head>
+	<body>
+		<div>
+			<div class="cyto"></div>
+		</div>
+		<script type="module">
+			import {Graph} from "./js/Graph.js"
+
+			const g = new Graph()
+			const longid = i => i*1111
+			const cities = [
+				"Genève",
+				"Morges",
+				"Lausanne",
+				"Yverdon",
+				"Montreux",
+				"Martigny",
+				"Sion",
+				"Visp",
+				"Brig",
+				"Domodossola",
+				"Neuchâtel",
+				"Fribourg",
+				"Bern",
+				"Chaux-de-Fonds",
+				"Biel",
+				"Thun",
+				"Spiez",
+				"Interlaken",
+				"Grenchen",
+				"Solothurn",
+				"Delémont",
+				"Basel",
+				"Rheinfelden",
+				"Brugg",
+				"Zürich",
+				"Burgdorf",
+				"Olten",
+				"Langnau",
+				"Luzern",
+				"Zug",
+				"Arth-Goldau",
+				"Altdorf",
+				"Andermatt",
+				"Göschenen",
+				"Chur",
+				"Bellinzona",
+				"Locarno",
+				"Lugano",
+				"Chiasso",
+				"Pfäffikon",
+				"Schaffhausen",
+				"Winterthur",
+				"Weinfelden",
+				"Romanshorn",
+				"Konstanz",
+				"St.Gallen",
+				"St.Margreten",
+				"Sargans",
+				"Herisau",
+				"Appenzell",
+				"Landquart",
+				"Reichenau",
+				"Filisur",
+				"Klosters",
+				"S.Moritz",
+				"Scuol",
+			]
+
+			const connections = [
+				{n1: "Genè", n2: "Morg"},
+				{n1: "Morg", n2: "Laus"},
+				{n1: "Morg", n2: "Yver"},
+				{n1: "Laus", n2: "Mont"},
+				{n1: "Mart", n2: "Sion"},
+				{n1: "Mart", n2: "Mont"},
+				{n1: "Laus", n2: "Frib"},
+				{n1: "Bern", n2: "Frib"},
+				{n1: "Bern", n2: "Neuc"},
+				{n1: "Chau", n2: "Neuc"},
+				{n1: "Chau", n2: "Biel"},
+				{n1: "Bern", n2: "Biel"},
+				{n1: "Bern", n2: "Lang"},
+				{n1: "Luze", n2: "Lang"},
+				{n1: "Bern", n2: "Thun"},
+				{n1: "Spie", n2: "Thun"},
+				{n1: "Spie", n2: "Inte"},
+				{n1: "Spie", n2: "Mont"},
+				{n1: "Spie", n2: "Visp"},
+				{n1: "Luze", n2: "Inte"},
+				{n1: "Brig", n2: "Domo"},
+				{n1: "Loca", n2: "Domo"},
+				{n1: "Loca", n2: "Bell"},
+				{n1: "Luga", n2: "Chia"},
+				{n1: "Luga", n2: "Bell"},
+				{n1: "Altd", n2: "Bell"},
+				{n1: "Gösc", n2: "Bell"},
+				{n1: "Altd", n2: "Gösc"},
+				{n1: "Ande", n2: "Gösc"},
+				{n1: "Ande", n2: "Brig"},
+				{n1: "Ande", n2: "Reic"},
+				{n1: "Land", n2: "Chur"},
+				{n1: "Sarg", n2: "Land"},
+				{n1: "Sarg", n2: "St.M"},
+				{n1: "St.G", n2: "St.M"},
+				{n1: "St.G", n2: "Wint"},
+				{n1: "St.G", n2: "Heri"},
+				{n1: "St.G", n2: "Roma"},
+				{n1: "Wein", n2: "Roma"},
+				{n1: "Wein", n2: "Kons"},
+				{n1: "Roma", n2: "Kons"},
+				{n1: "Wein", n2: "Wint"},
+				{n1: "Wint", n2: "Züri"},
+				{n1: "Brug", n2: "Züri"},
+				{n1: "Olte", n2: "Brug"},
+				{n1: "Olte", n2: "Burg"},
+				{n1: "Bern", n2: "Burg"},
+				{n1: "Olte", n2: "Solo"},
+				{n1: "Gren", n2: "Solo"},
+				{n1: "Gren", n2: "Biel"},
+				{n1: "Gren", n2: "Delé"},
+				{n1: "Base", n2: "Delé"},
+				{n1: "Base", n2: "Olte"},
+				{n1: "Base", n2: "Rhei"},
+				{n1: "Brug", n2: "Rhei"},
+				{n1: "Züri", n2: "Zug"},
+				{n1: "Luze", n2: "Zug"},
+				{n1: "Arth", n2: "Zug"},
+				{n1: "Luze", n2: "Arth"},
+				{n1: "Luze", n2: "Olte"},
+				{n1: "Altd", n2: "Arth"},
+				{n1: "Arth", n2: "Pfäf"},
+				{n1: "Züri", n2: "Pfäf"},
+				{n1: "Sarg", n2: "Pfäf"},
+				{n1: "Heri", n2: "Pfäf"},
+				{n1: "Heri", n2: "Appe"},
+				{n1: "Sion", n2: "Visp"},
+				{n1: "Brig", n2: "Visp"},
+				{n1: "Züri", n2: "Scha"},
+				{n1: "Yver", n2: "Neuc"},
+				{n1: "Reic", n2: "Chur"},
+				{n1: "Reic", n2: "Fili"},
+				{n1: "S.Mo", n2: "Fili"},
+				{n1: "S.Mo", n2: "Scuo"},
+				{n1: "Klos", n2: "Scuo"},
+				{n1: "Klos", n2: "Fili"},
+				{n1: "Klos", n2: "Land"},
+			]
+
+			const nodes = cities.map(n=>({data: {id: n.slice(0,4), full: n}}))
+
+			var ge = nodes.find(n=>n.data.id==="Genè")
+			ge.position = {x: 50, y: 650}
+			ge.locked = true
+			var r = nodes.find(n=>n.data.id==="Roma")
+			r.position = {x: 1000, y: 50}
+			r.locked = true
+			var c = nodes.find(n=>n.data.id==="Chia")
+			c.position = {x: 900, y: 750}
+			c.locked = true
+
+			var cy = cytoscape({
+
+container: document.querySelector('.cyto'), // container to render in
+
+
+elements: [
+	...nodes,
+	...connections.map(e=>({data: {id: `${e.n1} --> ${e.n2}`,
+	source: e.n1, target: e.n2}})), // list of graph elements to start with
+	// { // node a
+	// 	data: { id: 'a' }
+	// },
+	// { // node b
+	// 	data: { id: 'b' }
+	// },
+	// { // edge ab
+	// 	data: { id: 'ab', source: 'a', target: 'b' }
+	// }
+],
+
+style: [ // the stylesheet for the graph
+	{
+		selector: 'node',
+		style: {
+			'background-color': '#cde',
+			'label': 'data(id)',
+			'width': (ele) => 20 + String(ele.data('id')).length * 10,
+			'shape': 'round-rectangle',
+			'text-halign': 'center',
+			'text-valign': 'center'
+		}
+	},
+
+	{
+		selector: 'edge',
+		style: {
+			'width': 3,
+			'line-color': '#ccc',
+			'target-arrow-color': '#ccc',
+			'target-arrow-shape': 'triangle',
+			'curve-style': 'bezier'
+		}
+	}
+],
+
+layout: {
+	name: 'cose',
+	numIter: 2000000,
+	coolingFactor: 0.9995,
+}
+
+	// layout: {
+	// 	name: 'grid',
+	// 	rows: 3
+	// }
+
+});
+
+console.log(1);
+var ge = nodes.find(n=>n.data.id==="Genè")
+			ge.locked = false
+			var r = nodes.find(n=>n.data.id==="Roma")
+			r.locked = false
+			var c = nodes.find(n=>n.data.id==="Chia")
+			c.position = {x: 900, y: 750}
+			c.locked = false
+		</script>
+	</body>
+</html>

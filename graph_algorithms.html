@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Graphs</title>
+		<style>
+			.cyto {height: 70vw;}
+		</style>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.19.1/cytoscape.min.js" integrity="sha512-REr7ZKldLo2Lx6UiQ6autPWZR+j4u1/7ElYsrcwFe3ZmT/TKXCF/vXqNP/d2BQ78k0tapdZFccpFkku9bwrS3w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+	</head>
+	<body>
+		<div>
+			Seitenlänge <input class="Nroot" type=number min=2 max=20 value=10> Knoten<br>
+			<button class="runDijkstra">Dijkstra</button>
+			<button class="runDijkstraStep">Dijkstra Step</button>
+		</div>
+		<div>
+			<div class="cyto"></div>
+			<svg class="graphviewer"></svg>
+		</div>
+		<!-- <script src="renderGraph.js"></script>
+		<script src="Graphs.js"></script> -->
+		<script type="module">
+			import {Graph} from "./js/Graph.js"
+			import {buildGraph} from "./js/buildGraph.js"
+			import {findShortestPath as dijkstraStep} from "./viewer/dijkstraStep.js"
+			import {findShortestPath} from "./js/dijkstra.js"
+			import {renderGraph} from "./viewer/renderModule.js"
+
+
+			document.querySelector(".runDijkstra").addEventListener("click", e=>runDijkstra())
+			document.querySelector(".runDijkstraStep").addEventListener("click", e=>runDijkstraStep())
+
+			function buildGraphFromSettings() {
+				const Nroot = +document.querySelector(".Nroot").value
+				const g = buildGraph(Nroot)
+				return {g, Nroot}
+			}
+
+			let currentDijkstra = null
+
+			async function runDijkstraStep() {
+				if(!currentDijkstra) {
+					const {g, Nroot} = buildGraphFromSettings()
+					const renderer = renderGraph(g)
+					renderer.$('node').css({content: '_'})
+					const stepper = dijkstraStep(g, "0", String(Nroot**2-1))
+					currentDijkstra = {stepper, s: stepper.next(), phase: "relax", g, renderer}
+				}
+				else if (!currentDijkstra.s.done && currentDijkstra.phase === "relax") {
+					console.log(currentDijkstra.s.value);
+					const {pending, done} = currentDijkstra.s.value
+					for(let id of Object.keys(pending)) {
+						currentDijkstra.renderer.$('node#'+id).css({content: ''+pending[id]});
+						currentDijkstra.renderer.style().selector('node#'+id).style('background-color', '#f83').update()
+					}
+					for(let id of Object.keys(done)) {
+						currentDijkstra.renderer.style().selector('node#'+id).style('background-color', '#9eb').update()
+					}
+					currentDijkstra.s = currentDijkstra.stepper.next()
+					currentDijkstra.phase = "findMin"
+				}
+				else if (!currentDijkstra.s.done && currentDijkstra.phase === "findMin") {
+					const {current, done} = currentDijkstra.s.value
+					currentDijkstra.renderer.$('node#'+current).css({content: ''+done[current]});
+					currentDijkstra.renderer.style().selector('node#'+current).style('background-color', '#ff9').update()
+					//renderer.style().selector('node#'+current).style('background-color', '#ff9').update()
+					currentDijkstra.s = currentDijkstra.stepper.next()
+					currentDijkstra.phase = "relax"
+				}
+				else {
+					currentDijkstra.s.value.route.split("->").forEach(id=>{
+						currentDijkstra.renderer.style().selector('node#'+id).style('background-color', '#800').update()
+					})
+					currentDijkstra = null
+				}
+			}
+
+			async function runDijkstra() {
+				const {g, Nroot} = buildGraphFromSettings()
+				const renderer = renderGraph(g)
+				renderer.$('node').css({content: '_'})
+				const stepper = dijkstraStep(g, "0", String(Nroot**2-1))
+				currentDijkstra = {stepper, s: stepper.next(), phase: "relax", g, renderer}
+				while(!currentDijkstra.s.done) {
+					const {pending, done} = currentDijkstra.s.value
+					for(let id of Object.keys(pending)) {
+						currentDijkstra.renderer.$('node#'+id).css({content: ''+pending[id]});
+						currentDijkstra.renderer.style().selector('node#'+id).style('background-color', '#f83').update()
+					}
+					for(let id of Object.keys(done)) {
+						currentDijkstra.renderer.style().selector('node#'+id).style('background-color', '#9eb').update()
+					}
+					await new Promise(r=>setTimeout(r, 10))
+					currentDijkstra.s = currentDijkstra.stepper.next()
+					currentDijkstra.phase = "findMin"
+					const {current} = currentDijkstra.s.value
+					currentDijkstra.renderer.$('node#'+current).css({content: ''+done[current]});
+					currentDijkstra.renderer.style().selector('node#'+current).style('background-color', '#ff9').update()
+					//renderer.style().selector('node#'+current).style('background-color', '#ff9').update()
+					await new Promise(r=>setTimeout(r, 10))
+					currentDijkstra.s = currentDijkstra.stepper.next()
+					currentDijkstra.phase = "relax"
+				}
+				currentDijkstra.s.value.route.split("->").forEach(id=>{
+					currentDijkstra.renderer.style().selector('node#'+id).style('background-color', '#800').update()
+				})
+				currentDijkstra = null
+
+			}
+
+
+
+
+
+			// 	let s = stepper.next()
+			// 	while(!s.done) {
+			// 		const {pending, done} = s.value
+			// 		for(let id of Object.keys(pending)) {
+			// 			console.log(id, pending[id]);
+			// 			console.log(g.getNeighbours(id), g.directed);
+			// 			renderer.$('node#'+id).css({content: ''+pending[id]});
+			// 			renderer.style().selector('node#'+id).style('background-color', '#f83').update()
+			// 		}
+			// 		for(let id of Object.keys(done)) {
+			// 			renderer.style().selector('node#'+id).style('background-color', '#9eb').update()
+			// 		}
+			// 		await new Promise(r=>setTimeout(r, 100))
+			// 		s = stepper.next()
+			// 		const {current} = s.value
+			// 		renderer.$('node#'+current).css({content: ''+done[current]});
+			// 		renderer.style().selector('node#'+current).style('background-color', '#ff9').update()
+			// 		//renderer.style().selector('node#'+current).style('background-color', '#ff9').update()
+			// 		await new Promise(r=>setTimeout(r, 100))
+			// 		//console.log(pending);
+			// 		s = stepper.next()
+			// 	}
+			// 	console.log(s.value);
+
+			// 	s.value.route.split("->").forEach(id=>{
+			// 		renderer.style().selector('node#'+id).style('background-color', '#800').update()
+			// 	})
+			// 	}
+			// }
+
+			// async function runDijkstra() {
+			// 	const {g, Nroot} = buildGraphFromSettings()
+			// 	const renderer = renderGraph(g)
+			// 	renderer.$('node').css({content: '_'})
+			// 	const stepper = findShortestPath(g, "0", String(Nroot**2-1))
+			// 	let s = stepper.next()
+			// 	while(!s.done) {
+			// 		const {pending, done} = s.value
+			// 		for(let id of Object.keys(pending)) {
+			// 			console.log(id, pending[id]);
+			// 			console.log(g.getNeighbours(id), g.directed);
+			// 			renderer.$('node#'+id).css({content: ''+pending[id]});
+			// 			renderer.style().selector('node#'+id).style('background-color', '#f83').update()
+			// 		}
+			// 		for(let id of Object.keys(done)) {
+			// 			renderer.style().selector('node#'+id).style('background-color', '#9eb').update()
+			// 		}
+			// 		await new Promise(r=>setTimeout(r, 100))
+			// 		s = stepper.next()
+			// 		const {current} = s.value
+			// 		renderer.$('node#'+current).css({content: ''+done[current]});
+			// 		renderer.style().selector('node#'+current).style('background-color', '#ff9').update()
+			// 		//renderer.style().selector('node#'+current).style('background-color', '#ff9').update()
+			// 		await new Promise(r=>setTimeout(r, 100))
+			// 		//console.log(pending);
+			// 		s = stepper.next()
+			// 	}
+			// 	console.log(s.value);
+
+			// 	s.value.route.split("->").forEach(id=>{
+			// 		renderer.style().selector('node#'+id).style('background-color', '#800').update()
+			// 	})
+			// }
+
+
+if(location.search.includes("prim")) {
+	t.forEach(([source, target])=>{
+		renderer.style().selector(`edge#${source}_${target}`).style('line-color', '#000').style("width", 6).update()
+		renderer.style().selector(`edge#${target}_${source}`).style('line-color', '#000').style("width", 6).update()
+	})
+}
+		</script>
+	</body>
+</html>
